@@ -1,0 +1,82 @@
+body {
+  background-image: url("pictures/front_page_background1.png");
+  background-size: cover;
+  font-family: 'tahoma', sans-serif; 
+}
+
+
+body.popup-open {
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+
+#howto-popup,
+#howto-popup * {
+  filter: none;
+  pointer-events: auto;
+}
+
+#open-howto {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  cursor: pointer;
+}
+
+
+.popup-overlay {
+  display: none;
+  position: fixed;
+  top: 20px;                  
+  right: 20px;
+  width: auto;
+  height: auto;
+  z-index: 2000;
+}
+
+
+.popup-box {
+  background: white;
+  border-radius: 15px;
+  padding: 20px 25px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+  max-width: 350px;
+  position: relative;
+}
+
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.play-btn {
+  background: none;
+  border: none;
+  display: block;
+  position: absolute;
+  top: 45%;
+  left: 52%;
+  width: 30px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.play-btn img {
+  width: 500px;
+}
+
+.play-btn:hover {
+  transform: scale(1.1);
+}
