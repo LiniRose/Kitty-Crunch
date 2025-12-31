@@ -1,11 +1,15 @@
-const screeHeight = window.innerHeight;
+const screenHeight = window.innerHeight;
 const screenWidth = window.innerWidth;
-const score = document.querySelector("#score");
-const highscoretxt = document.querySelector("#highScore");
+
+const scoreElement = document.querySelector("#score");
+const highscoreElement = document.querySelector("#highScore");
 const player = document.querySelector("#player");
 const sound = new Audio("sound.mp3");
 
-let space = 1500;
+const fallSpeed = 3;
+const playerSpeed = 3;
+
+let interval = 1500;
 let direction = 0;
 let playerLeft = parseInt(player.style.left) || 0;
 let currentscore = 0;
@@ -14,85 +18,83 @@ let playerRect = player.getBoundingClientRect();
 let currentTime = 0;
 let isPaused = false;
 
-score.textContent = `${currentscore}`;
-highscoretxt.textContent = `${highscore}`;
+
+scoreElement.textContent = `${currentscore}`;
+highscoreElement.textContent = `${highscore}`;
+
 player.style.position = "absolute";
 player.style.left = "0px";
-player.style.top = screeHeight - playerRect.bottom - 20 + "px";
+player.style.top = screenHeight - playerRect.bottom - 20 + "px";
+
 sound.loop = true;
 sound.play();
 
-//Check for player movement
-document.addEventListener("keydown", (event) => {
-  if (event.code === "ArrowLeft") {
+
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "ArrowLeft") {
     if (direction > 0) direction = 0;
     direction--;
-  } else if (event.code === "ArrowRight") {
+  } else if (e.code === "ArrowRight") {
     if (direction < 0) direction = 0;
     direction++;
   }
 });
 
-setInterval(tick, 10);
 
-function tick() {
-  if (isPaused) return;
-
-  let random = Math.random();
-  currentTime += 10;
-  if (currentTime > space) {
-    currentTime = 0;
-    space *= 0.99;
-    if (random < 0.8) tacoPlace();
-    else bombPlacement();
-  }
-  playerMovement();
-
-  bombMovement();
-
-  tacoMovement();
-
-  bombDetection();
-
-  tacoDetection();
-}
-
-function playerMovement() {
+function playerMove() {
   playerRect = player.getBoundingClientRect();
-  let step = 3 * direction;
-  //Checks if player collides with screen
+  let move = playerSpeed * direction;
+
   if (direction < 0) {
-    if (playerLeft + step >= 0) {
-      playerLeft += step;
+    if (playerLeft + move >= 0) {
+      playerLeft += move;
     } else {
       playerLeft = 0;
     }
   } else {
-    if (playerLeft + playerRect.width + step <= screenWidth) {
-      playerLeft += step;
+    if (playerLeft + playerRect.width + move <= screenWidth) {
+      playerLeft += move;
     } else {
       playerLeft = screenWidth - playerRect.width;
     }
   }
 
   player.style.left = playerLeft + "px";
+
   const dir = direction > 0 ? -1 : 1;
   player.style.setProperty("transform", `scaleX(${dir})`);
 }
 
-function bombMovement() {
-  document.querySelectorAll(".Bomb").forEach((img) => {
-    let top = parseInt(img.style.top) || 0;
+function spawn(type) {
+  const element = document.createElement("img");
+  const specificHeight = type === "Taco" ? "6%" : "7%";
 
-    img.style.top = top + 3 + "px";
+  Object.assign(element.style, {
+    position: "absolute",
+    top: "0px",
+    width: "5%",
+    height: specificHeight,
   });
+
+  element.src = type === "Taco" ? "pictures/taco.png" : "pictures/bomb.png";
+  element.className = type;
+  document.body.append(element);
+
+  element.style.left =
+    Math.random() * (window.innerWidth - element.offsetWidth) + "px";
 }
 
-function tacoMovement() {
-  document.querySelectorAll(".Taco").forEach((img) => {
-    let top = parseInt(img.style.top) || 0;
+function fall(className) {
+  document.querySelectorAll("." + className).forEach((element) => {
+    const top = parseInt(element.style.top) || 0;
+    element.style.top = top + fallSpeed + "px";
 
-    img.style.top = top + 3 + "px";
+    if (element.getBoundingClientRect().bottom >= screenHeight) {
+      element.remove();
+
+      if (className === "Taco") die();
+    }
   });
 }
 
@@ -108,10 +110,6 @@ function bombDetection() {
     ) {
       die();
     }
-
-    if (bombRect.bottom >= screeHeight) {
-      img.remove();
-    }
   });
 }
 
@@ -126,53 +124,35 @@ function tacoDetection() {
       tacoRect.top < playerRect.bottom
     ) {
       currentscore++;
-      score.textContent = `${currentscore}`;
+      scoreElement.textContent = `${currentscore}`;
       if (currentscore > highscore) {
         highscore = currentscore;
       }
-      highscoretxt.textContent = `${highscore}`;
+      highscoreElement.textContent = `${highscore}`;
       img.remove();
-    }
-
-    if (tacoRect.bottom >= screeHeight) {
-      img.remove();
-      die();
     }
   });
 }
 
-function bombPlacement() {
-  const bomb = document.createElement("img");
-  Object.assign(bomb.style, {
-    position: "absolute",
-    top: 0 + "px",
-    height: 6 + "%",
-    width: 5 + "%",
-  });
-  bomb.src = "pictures/bomb.png";
-  bomb.className = "Bomb";
+function tick() {
+  if (isPaused) return;
 
-  document.body.append(bomb);
+  currentTime += 10;
+  if (currentTime > interval) {
+    currentTime = 0;
+    interval *= 0.99;
+    Math.random() < 0.8 ? spawn("Taco") : spawn("Bomb");
+  }
 
-  bomb.style.left =
-    Math.random() * (window.innerWidth - bomb.offsetWidth) + "px";
-}
+  playerMove();
 
-function tacoPlace() {
-  const taco = document.createElement("img");
-  Object.assign(taco.style, {
-    position: "absolute",
-    top: 0 + "px",
-    height: 6 + "%",
-    width: 5 + "%",
-  });
-  taco.src = "pictures/taco.png";
-  taco.className = "Taco";
+  fall("Bomb");
 
-  document.body.append(taco);
+  fall("Taco");
 
-  taco.style.left =
-    Math.random() * (window.innerWidth - taco.offsetWidth) + "px";
+  bombDetection();
+
+  tacoDetection();
 }
 
 function die() {
@@ -200,7 +180,7 @@ function die() {
     yourScore.textContent =
       "Kitty ate " + currentscore + " tacos, still not enough!";
   }
-  
+
   const button = document.createElement("button");
   button.textContent = "Give it more tacos!";
   button.id = "restart";
@@ -212,7 +192,7 @@ function die() {
 
   isPaused = true;
 
-   button.addEventListener("click", () => {
+  button.addEventListener("click", () => {
     overlay.remove();
     isPaused = false;
     currentscore = 0;
@@ -224,3 +204,4 @@ function die() {
   });
 }
 
+setInterval(tick, 10);
