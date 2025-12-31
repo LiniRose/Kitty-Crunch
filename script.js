@@ -9,7 +9,7 @@ const sound = new Audio("sound.mp3");
 const fallSpeed = 3;
 const playerSpeed = 3;
 
-let interval = 1500;
+let interval = 1000;
 let direction = 0;
 let playerLeft = parseInt(player.style.left) || 0;
 let currentscore = 0;
@@ -17,7 +17,6 @@ let highscore = parseInt(localStorage.getItem("highscore")) || 0;
 let playerRect = player.getBoundingClientRect();
 let currentTime = 0;
 let isPaused = false;
-
 
 scoreElement.textContent = `${currentscore}`;
 highscoreElement.textContent = `${highscore}`;
@@ -29,8 +28,6 @@ player.style.top = screenHeight - playerRect.bottom - 20 + "px";
 sound.loop = true;
 sound.play();
 
-
-
 document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowLeft") {
     if (direction > 0) direction = 0;
@@ -40,7 +37,6 @@ document.addEventListener("keydown", (e) => {
     direction++;
   }
 });
-
 
 function playerMove() {
   playerRect = player.getBoundingClientRect();
@@ -199,7 +195,7 @@ function die() {
     localStorage.setItem("highscore", highscore);
     score.textContent = `${currentscore}`;
     sound.play();
-    space = 1000;
+    interval = 1000;
     direction = 0;
   });
 }
